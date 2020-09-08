@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <title>Nonna Tonda Kitchen - Today's Orders</title>
+        <link rel="stylesheet" href="../style.css" />
+    </head>
+    <body>
+
+        <div id="top-nav">
+
+            <a href="/" class="top-link">Home</a>
+            <a href="/today" class="top-link">Today</a>
+            <a href="/drivers" class="top-link">Driver Schedules</a>
+            <a href="/logout" class="top-link" id="logout-link">Logout</a>
+
+        </div>
+
+        <div class="vert-section">
+            <div class="logo-hold">
+                    <img id="logo" src="../assets/logo.png" />
+            </div>
+        </div>
+
+        <div id="main-content">
+
+            <div class="vert-section">
+                    <h1>Today's Orders</h1>
+
+                    <h2>Summary</h2>
+
+                    <div id="summary-data" style="display:none; margin-left:auto; margin-right:auto;">
+
+                    </div>
+
+                    <div id="summary-loading" style="display:none;margin-left:auto; margin-right:auto; width:20px;">
+                        <div class="sk-chase">
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                              </div>
+                    </div>
+
+
+                    <h2>Full List</h2>
+
+                    <div id="full-data" style="display:none; margin-left:auto; margin-right:auto;">
+
+                    </div>
+
+                    
+                <div id="full-list-loading" style="display:none;margin-left:auto; margin-right:auto; width:20px;">
+                    <div class="sk-chase">
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                          </div>
+                </div>
+
+
+
+            </div>
+            
+            <div id="error_message"></div>
+
+        </div>
+        <script type="text/javascript" src="./../jquery.min.js"></script>
+        <script type="text/javascript" src="./functions.js"></script>
+
+    </body>
+</html>

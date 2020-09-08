@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>Nonna Tonda Kitchen - Login</title>
+        <link rel="stylesheet" href="../style.css" />
+    </head>
+    <body>
+
+        <div id="top-nav" style="display:block; text-align: center">
+
+            Login
+
+        </div>
+
+        <div class="vert-section">
+            <div class="logo-hold">
+                <img id="logo" src="../assets/logo.png" />
+            </div>
+        </div>
+
+        <div id="main-content">
+
+            <div class="vert-section">
+                <div id="login--form" style="display:block">
+                    <p class="login-form">Username</p>
+                    <input type="text" id="api-user" class="inpt" />
+                    <p class="login-form">Password</p>
+                    <input type="password" id="api-token" class="inpt" />
+                    <button id="authBtn" onclick="login()">Login</button>
+                </div>
+
+                <div id="loading" style="display:none;margin-left:auto; margin-right:auto; width:20px;">
+                    <div class="sk-chase">
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                          </div>
+                </div>
+
+            </div>
+            
+            <div id="error_message"></div>
+        </div>
+
+        <script type="text/javascript" src="functions.js"></script>
+    </body>
+</html>
