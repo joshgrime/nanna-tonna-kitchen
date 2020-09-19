@@ -1,2 +1,5 @@
 public/assets
+temp
+schedules
 node_modules
+.env

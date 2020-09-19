@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Nonna Tonda Kitchen - Today's Orders</title>
+        <title>Nonna Tonda Kitchen - Orders</title>
         <link rel="stylesheet" href="../style.css" />
     </head>
     <body>
@@ -8,7 +8,7 @@
         <div id="top-nav">
 
             <a href="/" class="top-link">Home</a>
-            <a href="/today" class="top-link">Today</a>
+            <a href="/orders" class="top-link">Orders</a>
             <a href="/drivers" class="top-link">Driver Schedules</a>
             <a href="/logout" class="top-link" id="logout-link">Logout</a>
 
@@ -23,9 +23,29 @@
         <div id="main-content">
 
             <div class="vert-section">
-                    <h1>Today's Orders</h1>
+                    <h1>Orders</h1>
 
-                    <h2>Summary</h2>
+                    <div id="date-display"></div>
+
+                    <h2>Today's Orders</h2>
+
+                    <div id="new-summary-data" style="display:none; margin-left:auto; margin-right:auto;">
+
+                    </div>
+
+                    <div id="new-summary-loading" style="display:none;margin-left:auto; margin-right:auto; width:20px;">
+                        <div class="sk-chase">
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                                <div class="sk-chase-dot"></div>
+                              </div>
+                    </div>
+
+
+                    <h2>Week Summary</h2>
 
                     <div id="summary-data" style="display:none; margin-left:auto; margin-right:auto;">
 
@@ -43,7 +63,8 @@
                     </div>
 
 
-                    <h2>Full List</h2>
+
+                    <h2>Full Order List</h2>
 
                     <div id="full-data" style="display:none; margin-left:auto; margin-right:auto;">
 
@@ -68,6 +89,7 @@
             <div id="error_message"></div>
 
         </div>
+        <script type="text/javascript" src="./../moment.min.js"></script>
         <script type="text/javascript" src="./../jquery.min.js"></script>
         <script type="text/javascript" src="./functions.js"></script>
 
