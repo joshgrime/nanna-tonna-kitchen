@@ -1,6 +1,7 @@
 var $input;
 
 function generateReports(){
+    $('#results').html('<h2>Downloads</h2>');
     document.getElementById('gen-btn').style.display = 'none';
     document.getElementById('loading').style.display = 'block';
     var picker = $input.pickadate('picker')
