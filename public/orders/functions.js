@@ -24,7 +24,7 @@ return new Promise(function(resolve, reject) {
 
     var date_display_string = today.format('DD/MM/YYYY');
 
-    var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
     var difference = today.diff(anchorDate, 'weeks');
 
     if (difference === 0) weekA = true;
@@ -94,7 +94,7 @@ async function createTodayAggregates(data) {
             veg6:0
         }
     };
-    var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
     var todayDate = moment().format('YYYYMMDD');
 
@@ -120,14 +120,12 @@ async function createTodayAggregates(data) {
             var dishNumber = variant_split[variant_split.length-1];
 
             if (weekA === true) {
-                
                 if (dishNumber === 'One') {
                     label = 'meat';
                 }
                 else {
                     label = 'veg';
                 }
-
             }
             else {
                 if (dishNumber === 'One') {
@@ -196,7 +194,7 @@ function buildTable(data) {
 
     var tableSections = {};
 
-    var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
     for (let x of data) {
         
@@ -227,33 +225,35 @@ function buildTable(data) {
                     var prop = properties.filter(prop=>{
                         return prop.name === 'Dont Mind'
                     });
-
-                    var variant_split = prop[0].value.split(' ');
-                    var dishNumber = variant_split[variant_split.length-1];
-                    var label;
-
-                    if (weekA === true) {
-                
-                        if (dishNumber === 'One') {
-                            label = 'Meat & Seafood';
-                        }
-                        else {
-                            label = 'Vegetarian';
-                        }
-        
-                    }
-                    else {
-                        if (dishNumber === 'One') {
-                            label = 'Vegetarian';
-                        }
-                        else {
-                            label = 'Meat & Seafood';
-                        }
-                    }
-
+                    if (prop.length>1) {
+                        var variant_split = prop[0].value.split(' ');
+                        var dishNumber = variant_split[variant_split.length-1];
+                        var label;
+    
+                        if (weekA === true) {
                     
-                    variant += (' - ' + label);
+                            if (dishNumber === 'One') {
+                                label = 'Meat & Seafood';
+                            }
+                            else {
+                                label = 'Vegetarian';
+                            }
+            
+                        }
+                        else {
+                            if (dishNumber === 'One') {
+                                label = 'Vegetarian';
+                            }
+                            else {
+                                label = 'Meat & Seafood';
+                            }
+                        }
+    
+                        
+                        variant += (' - ' + label);
+                    }
                 }
+
             }
             var quantity = x.quantity;
             if (x.quantity === undefined) quantity = x.line_items[0].quantity;
@@ -399,7 +399,7 @@ async function createAggregates(data) {
     var _dates = await getDateData();
 
     
-    var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
     for (let x of data) {
         
