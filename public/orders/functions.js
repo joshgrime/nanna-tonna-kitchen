@@ -4,11 +4,8 @@ async function getTodayOrders(){
     document.getElementById('summary-loading').style.display = 'block';
     var dataRequest = httpReq(window.location.protocol+'//'+window.location.host+'/today-orders', 'GET');
     dataRequest.then(x=>{
-        console.log(x);
         var data = JSON.parse(x);
-        console.log(data);
         buildTable(data[1]);
-        console.log('Got today order too:')
         buildTodayOrder(data[0]);
     });
 }
@@ -118,12 +115,9 @@ async function createTodayAggregates(data) {
         var label = variant.indexOf('vegetarian') > -1 ? 'veg' : variant.indexOf('meat') > -1 ? 'meat' : 'dontmind';
 
         if (label === 'dontmind') {
-            console.log('Dont mind label');
         
             
             var dishNumber = variant_split[variant_split.length-1];
-            console.log(dishNumber)
-            console.log(x.date+' '+'week A is '+weekA);
 
             if (weekA === true) {
                 
@@ -216,7 +210,9 @@ function buildTable(data) {
             let tr = $('<tr></tr>');
             var email = x.email;
             var productTitle = x.product_title;
-            if (x.product_title === undefined) productTitle = x.line_items[0].product_title;
+            if (x.product_title === undefined) productTitle = x.line_items[0].title;
+
+            console.log(x);
     
             var variant = x.variant_title;
             if (x.variant_title === undefined) variant = x.line_items[0].variant_title;
@@ -401,8 +397,6 @@ async function createAggregates(data) {
         }
     };
     var _dates = await getDateData();
-    console.log('_DATES');
-    console.log(_dates);
 
     
     var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
@@ -597,14 +591,10 @@ return new Promise(function(resolve, reject){
 
     var todayIndex = currentDay.format("d");
     todayIndex = parseInt(todayIndex);
-    console.log('Starting off date finder...');
-    console.log('The current index today is '+todayIndex);
 
 
 
     for (let i=todayIndex; i<6; i++) {
-
-        console.log('Positive i running ('+i+')'); //this gets the rest of the week
 
         let thisDay;
 
@@ -614,8 +604,6 @@ return new Promise(function(resolve, reject){
         else if (i===4) thisDay = 'thursday';
         else if (i===5) thisDay = 'friday';
 
-        console.log('this day must be a... '+thisDay);
-        
         var d = currentDay.format("YYYYMMDD");
 
         payload[thisDay] = d;
@@ -626,14 +614,9 @@ return new Promise(function(resolve, reject){
 
     currentDay.add(2, 'days');//covers the weekend
 
-    console.log('Finished positive I.');
-    console.log('Today index is '+todayIndex);
-
     var daysLeftToDo = todayIndex - 1;
 
     for (let i=0; i<daysLeftToDo; i++) {
-
-        console.log('negative i running ('+i+')');
 
         let thisDay;
         if (i===0) thisDay = 'monday';
@@ -642,7 +625,6 @@ return new Promise(function(resolve, reject){
         else if (i===3) thisDay = 'thursday';
         else if (i===4) thisDay = 'friday';
 
-        console.log('this day must be a... '+thisDay);
         
         var d = currentDay.format("YYYYMMDD");
 
