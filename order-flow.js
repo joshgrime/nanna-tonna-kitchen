@@ -13,8 +13,6 @@ var weekMap = [
 
 function makeOptimoRequest(payload){
     console.log('Uploading to Optimoroute:');
-   //console.log(payload);
-    return;
         axios.post('https://api.optimoroute.com/v1/create_or_update_orders', payload)
         .then(res=>{
             finishProcess(res.data);
@@ -102,8 +100,6 @@ function buildOptimoRequest(){
             },
             "notes": note
         }
-
-        console.log(JSON.stringify(obj, null, 4));
 
         payload.orders.push(obj);
     }
