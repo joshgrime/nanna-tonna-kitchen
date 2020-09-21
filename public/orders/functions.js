@@ -97,10 +97,9 @@ async function createTodayAggregates(data) {
     var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
     var todayDate = moment().format('YYYYMMDD');
-
+    var today = moment(todayDate, 'YYYYMMDD');
     for (let x of data) {
         
-        var today = moment(todayDate, 'YYYYMMDD');
         var weekA = false;
         var difference = today.diff(anchorDate, 'weeks');
 
@@ -210,7 +209,6 @@ function buildTable(data) {
             var productTitle = x.product_title;
             if (x.product_title === undefined) productTitle = x.line_items[0].title;
 
-            console.log(x);
     
             var variant = x.variant_title;
             if (x.variant_title === undefined) variant = x.line_items[0].variant_title;
@@ -223,9 +221,12 @@ function buildTable(data) {
                 if (x.properties === undefined) properties = x.line_items[0].properties;
                 if (properties.length > 0) {
                     var prop = properties.filter(prop=>{
+                        console.log(prop.name);
                         return prop.name === 'Dont Mind'
                     });
-                    if (prop.length>1) {
+                    console.log(prop);
+                    if (prop.length>0) {
+                        console.log('prop true');
                         var variant_split = prop[0].value.split(' ');
                         var dishNumber = variant_split[variant_split.length-1];
                         var label;

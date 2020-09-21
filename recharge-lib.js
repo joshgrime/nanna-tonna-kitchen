@@ -117,7 +117,7 @@ function getTodayOrder(){
             var payload = [];
             var pageCount = 1;
             async function queue(){
-                var data = await makeShopifyRequest(pageCount, datestr, null);
+                var data = await makeShopifyRequest(pageCount, datestr, 'today');
                 payload = payload.concat(data);
                 pageCount++;
                 if (data.length >= 250) {
@@ -154,9 +154,14 @@ function makeFakeShopifyRequest(){
     });
 }
 
-function makeShopifyRequest(page, datestr, newstr){
+function makeShopifyRequest(page, datestr, today){
     return new Promise(function(resolve,reject){
-        var url = rchost+'/orders?limit=250&scheduled_at_min='+datestr+'&scheduled_at_max='+datestr+'&page='+page;
+
+        var ep =  today === 'today' ? 'orders' : 'charges';
+        var status = today === 'today' ? '' : '&status=QUEUED';
+        var q = today === 'today' ? 'scheduled_at_' : 'date_';
+
+        var url = rchost+'/'+ep+'?limit=250'+status+'&page='+page//+'&'+q+'min='+datestr+'&'+q+'max='+new_datestr;
         console.log('GET: '+url);
         var options = {
             headers: {
@@ -165,7 +170,10 @@ function makeShopifyRequest(page, datestr, newstr){
         }
         axios.get(url, options)
         .then(subs=>{
-            resolve(subs.data.orders);
+            if (subs.data.orders === undefined) {
+                resolve(subs.data.charges);
+            }
+            else resolve(subs.data.orders);
         })
         .catch(e=>{
             reject(e);

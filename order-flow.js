@@ -1,6 +1,7 @@
 const axios = require('axios');
 const uniqid = require('uniqid');
 const { makeShopifyRequest } = require('./recharge-lib.js');
+const moment = require('moment');
 
 module.exports = {
     default: initialise
@@ -11,6 +12,9 @@ var weekMap = [
 ];
 
 function makeOptimoRequest(payload){
+    console.log('Uploading to Optimoroute:');
+   //console.log(payload);
+    return;
         axios.post('https://api.optimoroute.com/v1/create_or_update_orders', payload)
         .then(res=>{
             finishProcess(res.data);
@@ -25,16 +29,24 @@ var orderRequestCount = 1;
 var orders = [];
 
 async function queueOrderRequest(datestr){
+
+    var m_datestr = moment(datestr, 'YYYY-MM-DD');
+    m_datestr.add(1, 'days');
+    var new_datestr = m_datestr.format('YYYY-MM-DD');
+
     var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
-    orders = orders.concat(newOrders);
+    var subPayload = newOrders.filter(y=>{
+        return y.scheduled_at.startsWith(new_datestr);
+    });
+    orders = orders.concat(subPayload);
     orderRequestCount++;
     if (newOrders.length >= 250) {
         queueOrderRequest(datestr);
     }
     else {
-        console.log(orders);
-        console.log('there were '+orders.length+' orders')
-        //buildOptimoRequest();//buildOnFleetRequest();
+       // console.log(orders);
+        console.log('there were '+orders.length+' orders');
+        buildOptimoRequest();//buildOnFleetRequest();
         orderRequestCount = 1;
     }
 }
@@ -47,33 +59,54 @@ function buildOptimoRequest(){
     
     for (let x of orders) {
 
+        var note = x.shipping_address.company;
+        var tagCheck = x.tags.indexOf('Subscription First Order') > -1;
+
+        if (tagCheck === true) {
+            note += ' New Customer';
+        }
+
         var scheduleData = x.scheduled_at.split('T')[0];
         let newId = uniqid();
+
+        var phone = x.shipping_address.phone.startsWith('44') ? '+' + x.shipping_address.phone : x.shipping_address.phone.startsWith('7') ? '0' + x.shipping_address.phone : x.shipping_address.phone;
+
+        var shipping_address2 = '';
+        if (x.shipping_address.address2 !== "null" && x.shipping_address.address2 !== null && x.shipping_address.address2 !== "") {
+            shipping_address2 = x.shipping_address.address2 + ', ';
+        }
+    
+        var address = x.shipping_address.address1 + ', ' +
+        shipping_address2 +
+        x.shipping_address.city + ', ' +
+        x.shipping_address.zip + ', ' +
+        x.shipping_address.country;
 
         var obj = {
 
             "orderNo": newId,
             "date": scheduleData,
             "duration": 2,
-            "type": "T",
+            "type": "D",
             "timeWindows": [
                 {
                     "twFrom":"09:00",
                     "twTo":"17:00"
                 }
             ],
-            "allowedWeekdays": [weekMap[tomorrowIndex]],
             "priority": "M",
             "email": x.email,
-            "phone": x.shipping_address.phone,
+            "phone": phone,
             "location": {
-                "address": x.shipping_address.phone
-            }
+                "address": address
+            },
+            "notes": note
         }
+
+        console.log(JSON.stringify(obj, null, 4));
 
         payload.orders.push(obj);
     }
-
     makeOptimoRequest(payload);
     orders = [];
 }
@@ -149,19 +182,9 @@ function initialise() {
     var date = new Date();
     todayIndex = date.getDay();
     tomorrowIndex = todayIndex + 1;
-
-    var year = date.getFullYear();
-
-    var month = date.getMonth();
-    month++;
-    month = month.toString();
-    if (month.length<2) month = "0" + month;
-    
-    var day = date.getDate();
-    day = day.toString();
-    if (day.length<2) day = "0" + day;
-    
-    var datestr = year+'-'+month+'-'+day;
+    var timeNow = moment();
+    //timeNow.add(1, 'days');
+    var datestr = timeNow.format('YYYY-MM-DD');
 
     queueOrderRequest(datestr);
 }
