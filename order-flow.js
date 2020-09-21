@@ -26,13 +26,15 @@ var orders = [];
 
 async function queueOrderRequest(datestr){
     var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
-    orders = orders.concat(newOrders.orders);
+    orders = orders.concat(newOrders);
     orderRequestCount++;
-    if (newOrders.orders.length >= 250) {
+    if (newOrders.length >= 250) {
         queueOrderRequest(datestr);
     }
     else {
-        buildOptimoRequest();//buildOnFleetRequest();
+        console.log(orders);
+        console.log('there were '+orders.length+' orders')
+        //buildOptimoRequest();//buildOnFleetRequest();
         orderRequestCount = 1;
     }
 }
@@ -73,6 +75,7 @@ function buildOptimoRequest(){
     }
 
     makeOptimoRequest(payload);
+    orders = [];
 }
 
 function buildOnFleetRequest(){

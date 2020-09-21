@@ -53,15 +53,29 @@ function getWeekOrder(){
             });
         }
         else {    
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = date.getMonth();
+            month++;
+            month = month.toString();
+            if (month.length<2) month = "0" + month;
+            var day = date.getDate();
+            day = day.toString();
+            if (day.length<2) day = "0" + day;
+            var datestr = year+'-'+month+'-'+day;   
             var payload = [];
             var pageCount = 1;
+
+            var mom = moment(datestr, 'YYYY-MM-DD');
+            mom.add(8, 'days');
+            var newstr = mom.format('YYYY-MM-DD');
+
             async function queue(){
-                var data = await makeSubRequest(pageCount); //use new string too
+                var data = await makeSubRequest(pageCount, datestr, newstr); //use new string too
                 payload = payload.concat(data);
                 pageCount++;
                 if (data.length >= 250) {
                     console.log('More than 250 subs');
-                    console.log(data[0]);
                     queue();
                 }
                 else {
@@ -107,12 +121,11 @@ function getTodayOrder(){
                 payload = payload.concat(data);
                 pageCount++;
                 if (data.length >= 250) {
-                    console.log('More than 250 subs');
-                    console.log(data[0]);
+                    console.log('More than 250 orders');
                     queue();
                 }
                 else {
-                    console.log('Got '+payload.length+' subs');
+                    console.log('Got '+payload.length+' orders');
                     resolve(payload);
                     exportOrders(payload);
                     ordersInCache = true;
@@ -160,9 +173,9 @@ function makeShopifyRequest(page, datestr, newstr){
     });
 }
 
-function makeSubRequest(page){
+function makeSubRequest(page, datestr, newstr){
     return new Promise(function(resolve,reject){
-        var url = rchost+'/subscriptions?limit=250&page='+page;
+        var url = rchost+'/charges?status=queued&limit=250&page='+page+'&date_min='+datestr+'&date_max='+newstr;
         console.log('GET: '+url);
         var options = {
             headers: {
@@ -171,7 +184,8 @@ function makeSubRequest(page){
         }
         axios.get(url, options)
         .then(subs=>{
-            resolve(subs.data.subscriptions);
+            console.log(subs.data);
+            resolve(subs.data.charges);
         })
         .catch(e=>{
             reject(e);

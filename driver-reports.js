@@ -108,14 +108,18 @@ function generateCSV(name, data, falseCount, date){
                 };
     
                 for (let z of data) {
-                    var dish = z.data.notes === "Veg" ? 'veg' : 'meat';
+
+                    console.log(z);
+                    var dish = z.data.customField2.toLowerCase().indexOf("meat") > -1 ? 'meat' : 'veg';
                     var quantity = z.data.customField1;
                     if (typeof quantity === 'string') quantity = parseInt(quantity);
                     aggregates[(dish+quantity)]++;
                 }
     
                 var orders = data.map(x => {
-                    return [x.data.orderNo, x.data.notes, x.data.customField1, x.data.customField3];
+                    let dish = x.data.customField2.toLowerCase().indexOf("meat") > -1 ? 'meat' : 'veg';
+                    let dish_format = dish === 'meat' ? 'Meat & Seafood' : 'Vegetarian';
+                    return [x.data.orderNo, dish_format, x.data.customField1, x.data.location.notes];
                 });
 
                 orders.unshift(['Order No', 'Dish', 'Quantity', 'Customer Message']);

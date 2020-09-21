@@ -73,10 +73,7 @@ function buildTodayOrder(data) {
             });
         
     }
-
-    console.log('BUILT TODAYS ORDERS');
-    console.log(aggregate);
-       createTodayAggregates(aggregate);
+    createTodayAggregates(aggregate);
 
 }
 
@@ -205,29 +202,66 @@ function buildTable(data) {
 
     var tableSections = {};
 
-    for (let x of data) {
+    var anchorDate = moment('14-09-2020', 'DD-MM-YYYY');
 
-        if (x.next_charge_scheduled_at !== null) {
+    for (let x of data) {
+        
+        var today = moment(x.date, 'YYYYMMDD');
+        var weekA = false;
+        var difference = today.diff(anchorDate, 'weeks');
+
+        if (difference === 0) weekA = true;
+        else if (difference % 2 === 0) weekA = true;
+
             let tr = $('<tr></tr>');
             var email = x.email;
             var productTitle = x.product_title;
+            if (x.product_title === undefined) productTitle = x.line_items[0].product_title;
     
             var variant = x.variant_title;
-    
-            var _variant = x.variant_title.toLowerCase();
+            if (x.variant_title === undefined) variant = x.line_items[0].variant_title;
+            var _variant = variant.toLowerCase();
+
+            
     
             if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
                 var properties = x.properties;
+                if (x.properties === undefined) properties = x.line_items[0].properties;
                 if (properties.length > 0) {
                     var prop = properties.filter(prop=>{
                         return prop.name === 'Dont Mind'
                     });
-                    var newWords = prop[0].value;
-                    variant += (' - ' + newWords);
+
+                    var variant_split = prop[0].value.split(' ');
+                    var dishNumber = variant_split[variant_split.length-1];
+                    var label;
+
+                    if (weekA === true) {
+                
+                        if (dishNumber === 'One') {
+                            label = 'Meat & Seafood';
+                        }
+                        else {
+                            label = 'Vegetarian';
+                        }
+        
+                    }
+                    else {
+                        if (dishNumber === 'One') {
+                            label = 'Vegetarian';
+                        }
+                        else {
+                            label = 'Meat & Seafood';
+                        }
+                    }
+
+                    
+                    variant += (' - ' + label);
                 }
             }
             var quantity = x.quantity;
-            var schedule_date = x.next_charge_scheduled_at.split('T')[0].replace(/-/g, '');
+            if (x.quantity === undefined) quantity = x.line_items[0].quantity;
+            var schedule_date = x.scheduled_at.split('T')[0].replace(/-/g, '');
             schedule_date = parseInt(schedule_date);
     
             tr.append('<td>'+email+'</td>');
@@ -247,7 +281,7 @@ function buildTable(data) {
                 quantity: quantity,
                 date: schedule_date,
             });
-        }
+
     }
 
         sortTable(tableSections);
