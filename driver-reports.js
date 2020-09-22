@@ -93,9 +93,7 @@ function generateCSV(name, data, falseCount, date){
             if (!fs.existsSync(__dirname+"/schedules/")){
                 fs.mkdirSync(__dirname+"/schedules/");
             }
-            console.log('Starting CSV export.');
-            console.log('my data')
-            console.log(data);        
+     
                 var filename = name +'-schedule-'+ date;           
     
                 var aggregates = {
@@ -106,14 +104,51 @@ function generateCSV(name, data, falseCount, date){
                     veg4:0,
                     veg6:0
                 };
+
+                function checkMeat(el) {
+                    return el === 'meat';
+                }
+
+                function checkVeg(el) {
+                    return el === 'veg';
+                }
     
                 for (let z of data) {
+                    var dish = z.data.customField2.toLowerCase()
 
-                    console.log(z);
-                    var dish = z.data.customField2.toLowerCase().indexOf("meat") > -1 ? 'meat' : 'veg';
-                    var quantity = z.data.customField1;
-                    if (typeof quantity === 'string') quantity = parseInt(quantity);
-                    aggregates[(dish+quantity)]++;
+                    if (dish.indexOf('meat')>-1 && dish.indexOf('veg')>-1) {
+
+                        var dish_split = dish.split(' ');
+                        console.log('DISH SPLIT: ');
+                        console.log(dish_split);
+
+                        var meat_index = dish_split.findIndex(checkMeat);
+                        var veg_index = dish_split.findIndex(checkVeg);
+                        console.log('MEAT INDEX FOUND');
+                        console.log(meat_index);                        
+                        console.log('VEG INDEX FOUND');
+                        console.log(veg_index);
+                        var veg_quantity = dish_split[veg_index-1];
+                        var meat_quantity = dish_split[meat_index-1];
+
+                        aggregates[('meat'+meat_quantity)]++;
+                        aggregates[('veg'+veg_quantity)]++;
+
+                        console.log('added a double order:');
+                        console.log('Meat: '+meat_quantity);
+                        console.log('Veg: '+veg_quantity);
+                    }
+                    else {
+
+                        var dishy = z.data.customField2.toLowerCase().indexOf("meat") > -1 ? 'meat' : 'veg';
+                    
+                        var quantity = z.data.customField1;
+                        if (typeof quantity === 'string') quantity = parseInt(quantity);
+                        aggregates[(dishy+quantity)]++;
+                    }
+
+
+
                 }
     
                 var orders = data.map(x => {

@@ -2,6 +2,14 @@ const axios = require('axios');
 const uniqid = require('uniqid');
 const { makeShopifyRequest } = require('./recharge-lib.js');
 const moment = require('moment');
+const OR_KEY = process.env.OR_KEY;
+const nodeGeocoder = require('node-geocoder');
+
+var options = {
+    provider: 'openstreetmap'
+  };
+   
+var geocoder = nodeGeocoder(options);
 
 module.exports = {
     default: initialise
@@ -13,7 +21,7 @@ var weekMap = [
 
 function makeOptimoRequest(payload){
     console.log('Uploading to Optimoroute:');
-        axios.post('https://api.optimoroute.com/v1/create_or_update_orders', payload)
+        axios.post('https://api.optimoroute.com/v1/create_or_update_orders?key='+OR_KEY, payload)
         .then(res=>{
             finishProcess(res.data);
         })
@@ -44,24 +52,37 @@ async function queueOrderRequest(datestr){
     else {
        // console.log(orders);
         console.log('there were '+orders.length+' orders');
-        buildOptimoRequest();//buildOnFleetRequest();
+        buildOptimoRequest(new_datestr);//buildOnFleetRequest();
         orderRequestCount = 1;
     }
 }
 
-function buildOptimoRequest(){
+async function buildOptimoRequest(date){
     
     var payload = {
         orders: []
     };
+
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
+
+    var today = moment(date, 'YYYYMMDD');
+        var weekA = false;
+        var difference = today.diff(anchorDate, 'weeks');
+
+        if (difference === 0) weekA = true;
+        else if (difference % 2 === 0) weekA = true;
     
     for (let x of orders) {
 
-        var note = x.shipping_address.company;
+
+        var note = ' ' + x.shipping_address.company;
         var tagCheck = x.tags.indexOf('Subscription First Order') > -1;
+
+        var newCust = ' ';
 
         if (tagCheck === true) {
             note += ' New Customer';
+            newCust = 'Yes';
         }
 
         var scheduleData = x.scheduled_at.split('T')[0];
@@ -73,6 +94,62 @@ function buildOptimoRequest(){
         if (x.shipping_address.address2 !== "null" && x.shipping_address.address2 !== null && x.shipping_address.address2 !== "") {
             shipping_address2 = x.shipping_address.address2 + ', ';
         }
+
+        var variant = x.line_items[0].variant_title;
+        var _variant = variant.toLowerCase();
+
+        if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
+            var properties = x.properties;
+            if (x.properties === undefined) properties = x.line_items[0].properties;
+            if (properties.length > 0) {
+                var prop = properties.filter(prop=>{
+                    return prop.name === 'Dont Mind'
+                });
+                if (prop.length>0) {
+                    var variant_split = prop[0].value.split(' ');
+                    var dishNumber = variant_split[variant_split.length-1];
+                    var label;
+
+                    if (weekA === true) {
+                
+                        if (dishNumber === 'One') {
+                            label = 'Meat & Seafood';
+                        }
+                        else {
+                            label = 'Vegetarian';
+                        }
+        
+                    }
+                    else {
+                        if (dishNumber === 'One') {
+                            label = 'Vegetarian';
+                        }
+                        else {
+                            label = 'Meat & Seafood';
+                        }
+                    }
+                    variant = label;
+                }
+            }
+        }
+        else {
+            var variant_split = variant.split(' / ');
+
+            if (variant_split.length > 3) {
+
+            variant = variant_split[variant_split.length-2] + ' + ' + variant_split[variant_split.length-1];
+                
+
+            }
+            else {
+                variant = variant_split[variant_split.length-1];
+
+            }
+
+        }
+
+        var quantity = x.line_items[0].variant_title.substring(0,1);
+
     
         var address = x.shipping_address.address1 + ', ' +
         shipping_address2 +
@@ -80,30 +157,56 @@ function buildOptimoRequest(){
         x.shipping_address.zip + ', ' +
         x.shipping_address.country;
 
+        var location = await geocoder.geocode(x.shipping_address.address1 + shipping_address2);
+
+        var lat;
+        var long;
+
+        if (location.length>0) {
+            lat = location[0].latitude;
+            long = location[0].longitude;    
+        }
+        else {
+            lat = 0.0;
+            long = 0.0;
+        }
+
+        console.log(location);
+        console.log(lat);
+        console.log(long);
+
+
         var obj = {
 
             "orderNo": newId,
             "date": scheduleData,
-            "duration": 2,
+            "duration": 4,
             "type": "D",
             "timeWindows": [
                 {
-                    "twFrom":"09:00",
-                    "twTo":"17:00"
+                    "twFrom":"00:00",
+                    "twTo":"23:59"
                 }
             ],
-            "priority": "M",
             "email": x.email,
             "phone": phone,
             "location": {
-                "address": address
+                "address": address,
+                "locationNo": x.shipping_address.zip,
+                "locationName": x.shipping_address.address1 + ', ' + x.shipping_address.zip,
+                "latitude": lat,
+                "longitude": long
             },
-            "notes": note
+            "notes": note,
+            "customField1": quantity,//dish quantity,
+            "customField2": variant, //dish type,
+            "customField3": newCust, //new customer
         }
 
         payload.orders.push(obj);
+        //console.log(obj);
     }
-    makeOptimoRequest(payload);
+   makeOptimoRequest(payload);
     orders = [];
 }
 
@@ -165,7 +268,7 @@ function buildOnFleetRequest(){
 
 function finishProcess(response) {
     console.log('Orders successfully submitted to OptimoRoute');
-    console.log(repsonse);
+    console.log(response);
 }
 
 function initialise() {
