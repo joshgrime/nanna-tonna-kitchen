@@ -152,20 +152,18 @@ function generateCSV(name, data, falseCount, date){
                 }
     
                 var orders = data.map(x => {
-                    let dish = x.data.customField2.toLowerCase().indexOf("meat") > -1 ? 'meat' : 'veg';
-                    let dish_format = dish === 'meat' ? 'Meat & Seafood' : 'Vegetarian';
-                    return [x.data.orderNo, dish_format, x.data.customField1, x.data.location.notes];
+                    return [x.data.orderNo, x.data.customField2, x.data.customField1, x.data.location.notes, x.data.customField3];
                 });
 
-                orders.unshift(['Order No', 'Dish', 'Quantity', 'Customer Message']);
-                orders.unshift([' ', ' ', ' ', ' ']);
-                orders.unshift(['Driver: '+name, ' ', ' ', ' ']);
-                orders.push([' ', ' ', ' ', ' ']);
-                orders.push(['Driver Summary', ' ', ' ', ' ']);
-                orders.push(['Meat & Seafood', 'Veg', ' ', ' ']);
-                orders.push(['2 x '+aggregates.meat2, '2 x '+aggregates.veg2, ' ', ' ']);
-                orders.push(['4 x '+aggregates.meat4, '4 x '+aggregates.veg4, ' ', ' ']);
-                orders.push(['6 x '+aggregates.meat6, '6 x '+aggregates.veg6, ' ', ' ']);
+                orders.unshift(['Order No', 'Dish', 'Quantity', 'Customer Message', 'New Customer']);
+                orders.unshift([' ', ' ', ' ', ' ', ' ']);
+                orders.unshift(['Driver: '+name, ' ', ' ', ' ', ' ']);
+                orders.push([' ', ' ', ' ', ' ', ' ']);
+                orders.push(['Driver Summary', ' ', ' ', ' ', ' ']);
+                orders.push(['Meat & Seafood', 'Veg', ' ', ' ', ' ']);
+                orders.push(['2 x '+aggregates.meat2, '2 x '+aggregates.veg2, ' ', ' ', ' ']);
+                orders.push(['4 x '+aggregates.meat4, '4 x '+aggregates.veg4, ' ', ' ', ' ']);
+                orders.push(['6 x '+aggregates.meat6, '6 x '+aggregates.veg6, ' ', ' ', ' ']);
 
                 var totalOrders = 0;
 
