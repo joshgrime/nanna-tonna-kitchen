@@ -124,10 +124,6 @@ function generateCSV(name, data, falseCount, date){
 
                         var meat_index = dish_split.findIndex(checkMeat);
                         var veg_index = dish_split.findIndex(checkVeg);
-                        console.log('MEAT INDEX FOUND');
-                        console.log(meat_index);                        
-                        console.log('VEG INDEX FOUND');
-                        console.log(veg_index);
                         var veg_quantity = dish_split[veg_index-1];
                         var meat_quantity = dish_split[meat_index-1];
 

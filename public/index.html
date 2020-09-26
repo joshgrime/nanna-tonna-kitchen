@@ -2,6 +2,8 @@
     <head>
         <title>Nonna Tonda Kitchen</title>
         <link rel="stylesheet" href="./style.css" />
+        <link rel="stylesheet" href="./drivers/picker2.css" />
+        <link rel="stylesheet" href="./drivers/picker.css" />
     </head>
     <body>
 
@@ -25,10 +27,40 @@
             <div class="vert-section">
                     <p>Welcome to the Nonna Tonda kitchen!</p>
             </div>
-            
+
+            <div class="vert-section">
+                <h1>Recharge Export</h1>
+
+                <div>Pull all orders scheduled for <input id="datepicker" /></div>
+                
+                <div id="gen-btn" class="goBtn">Generate Export</div>
+
+                <div id="results" style="display:none;margin-left:auto; margin-right:auto; width:100%;">
+                
+                    
+                
+                </div>
+                
+                <div id="loading" style="display:none;margin-left:auto; margin-right:auto; width:20px;">
+                    <div class="sk-chase">
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                            <div class="sk-chase-dot"></div>
+                          </div>
+                </div>
+
+                </div>
+        </div>
+                    
             <div id="error_message"></div>
 
         </div>
-
+        <script type="text/javascript" src="./jquery.min.js"></script>
+        <script type="text/javascript" src="./drivers/picker.js"></script>
+        <script type="text/javascript" src="./drivers/date-picker.js"></script>
+        <script type="text/javascript" src="./functions.js"></script>
     </body>
 </html>

@@ -56,6 +56,33 @@ app.get('/generate-driver-schedules/:date', isLoggedIn, function(req, res) {
     }
 });
 
+app.get('/generate-order-export/:date', isLoggedIn, function(req, res) {
+    try {
+        var data = orderFlow.default(req.params.date);
+        data.then(x=>{
+            res.send(x);
+        })
+    }
+    catch (e) {
+        res.sendStatus(500);
+    }
+});
+
+
+app.get('/get-order/:fileName', isLoggedIn, function(req, res) {
+
+    try {
+        var data = orderFlow.getCSVFile(req.params.fileName);
+        res.send(data);
+    }
+    catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
+});
+
+
 app.get('/get-schedule/:fileName', isLoggedIn, function(req, res) {
 
     try {
@@ -199,8 +226,7 @@ app.use('/', isLoggedIn, express.static(buildpath));
 var server = http.createServer(app).listen(app.get('port'));
 
 //set off integration on cron job
-var jobRunning = true;
+var jobRunning = false;
 var job = new CronJob('0 18 * * 0-5', orderFlow.default, null, true, "Europe/London");
-job.start();
 
 console.log(job.nextDates());
