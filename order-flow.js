@@ -46,6 +46,8 @@ var orders = [];
         async function queue(){
         var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
         var subPayload = newOrders.filter(y=>{
+            
+            if (y.email === 'pces201@hotmail.com') console.log('PADDY', y);
             return y.scheduled_at.startsWith(new_date);
         });
         orders = orders.concat(subPayload);
@@ -86,7 +88,9 @@ async function buildOptimoRequest(date){
 
 
         var note = ' ' + x.shipping_address.company;
-        var tagCheck = x.tags.indexOf('Subscription First Order') > -1;
+
+        
+
 
         var newCust = ' ';
 
@@ -297,6 +301,7 @@ function buildCSV(data, new_date_){
         var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
         var today = moment(new_date_, 'YYYY-MM-DD');
+
             var weekA = false;
             var difference = today.diff(anchorDate, 'weeks');
     
@@ -322,13 +327,24 @@ function buildCSV(data, new_date_){
     
             var note = ' ' + x.shipping_address.company;
             var tagCheck = x.tags.indexOf('Subscription First Order') > -1;
+
+            var t = x.created_at.split('T')[0];
+
+            console.log('CREATED AT '+t);
+
+            var createdTime = moment(t, 'YYYY-MM-DD');
     
+            var second_difference = today.diff(createdTime, 'weeks');
             var newCust = ' ';
-    
-            if (tagCheck === true) {
-                newCust = 'New Customer';
-            }
-        
+
+            if (second_difference === 0) newCust = 'New Customer';
+
+            console.log(x.email);
+            console.log('CREATED AT '+t);
+
+            console.log('difference is '+second_difference);
+
+            console.log(newCust);
             var phone = x.shipping_address.phone.startsWith('44') ? '+' + x.shipping_address.phone : x.shipping_address.phone.startsWith('7') ? '0' + x.shipping_address.phone : x.shipping_address.phone;
     
             var shipping_address2 = '';
@@ -359,7 +375,6 @@ function buildCSV(data, new_date_){
         }
     
             if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
-                console.log('We got a dont mind! '+_variant);
                 var properties = x.properties;
                 if (x.properties === undefined) properties = x.line_items[0].properties;
                 if (properties.length > 0) {
@@ -399,7 +414,6 @@ function buildCSV(data, new_date_){
                             }
                         }
                         variant = label;
-                        console.log('Variant should be '+variant);
                 }
             else {
                 var variant_split = variant.split(' / ');
