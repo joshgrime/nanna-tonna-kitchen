@@ -47,7 +47,7 @@ var orders = [];
         var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
         var subPayload = newOrders.filter(y=>{
             
-            if (y.email === 'pces201@hotmail.com') console.log('PADDY', y);
+            if (y.email === 'sarahcourtney.uk@gmail.com') console.log('SARAH', y);
             return y.scheduled_at.startsWith(new_date);
         });
         orders = orders.concat(subPayload);
@@ -117,8 +117,6 @@ async function buildOptimoRequest(date){
         if (_variant.indexOf('meat')>-1 && _variant.indexOf('veg')>-1) {
 
             var dish_split = dish.split(' ');
-            console.log('DISH SPLIT: ');
-            console.log(dish_split);
 
             var meat_index = dish_split.findIndex(checkMeat);
             var veg_index = dish_split.findIndex(checkVeg);
@@ -326,32 +324,11 @@ function buildCSV(data, new_date_){
     
     
             var note = ' ' + x.shipping_address.company;
-            var tagCheck = x.tags.indexOf('Subscription First Order') > -1;
-
-            var t = x.created_at.split('T')[0];
-
-            console.log('CREATED AT '+t);
-
-            var createdTime = moment(t, 'YYYY-MM-DD');
-    
-            var second_difference = today.diff(createdTime, 'weeks');
             var newCust = ' ';
 
-            if (second_difference === 0) newCust = 'New Customer';
+            if (x.total_price === '0.00') newCust = 'New Customer';
 
-            console.log(x.email);
-            console.log('CREATED AT '+t);
-
-            console.log('difference is '+second_difference);
-
-            console.log(newCust);
             var phone = x.shipping_address.phone.startsWith('44') ? '+' + x.shipping_address.phone : x.shipping_address.phone.startsWith('7') ? '0' + x.shipping_address.phone : x.shipping_address.phone;
-    
-            var shipping_address2 = '';
-            if (x.shipping_address.address2 !== "null" && x.shipping_address.address2 !== null && x.shipping_address.address2 !== "") {
-                shipping_address2 = x.shipping_address.address2 + ', ';
-            }
-    
             var variant = x.line_items[0].variant_title;
             var _variant = variant.toLowerCase();
 
