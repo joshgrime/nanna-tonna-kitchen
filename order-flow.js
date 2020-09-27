@@ -326,7 +326,9 @@ function buildCSV(data, new_date_){
             var note = ' ' + x.shipping_address.company;
             var newCust = ' ';
 
-            if (x.total_price === '0.00') newCust = 'New Customer';
+            if (x.total_price === '0.00' && x.total_discounts === '0.0') {
+                newCust = 'New Customer';
+            }
 
             var phone = x.shipping_address.phone.startsWith('44') ? '+' + x.shipping_address.phone : x.shipping_address.phone.startsWith('7') ? '0' + x.shipping_address.phone : x.shipping_address.phone;
             var variant = x.line_items[0].variant_title;
