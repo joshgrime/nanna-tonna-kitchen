@@ -165,7 +165,7 @@ function makeShopifyRequest(page, datestr, today){
         var ep =  today === 'today' ? 'orders' : 'charges';
         var status = today === 'today' ? '' : '&status=QUEUED';
 
-        var url = rchost+'/'+ep+'?limit=250'+status+'&page='+page//+'&'+q+'min='+datestr+'&'+q+'max='+new_datestr;
+        var url = rchost+'/'+ep+'?limit=250'+status+'&page='+page;//+'&'+q+'min='+datestr+'&'+q+'max='+new_datestr;
         console.log('GET: '+url);
         var options = {
             headers: {
@@ -175,6 +175,7 @@ function makeShopifyRequest(page, datestr, today){
         axios.get(url, options)
         .then(subs=>{
             if (subs.data.orders === undefined) {
+                console.log(subs.data.charges[0]);
                 resolve(subs.data.charges);
             }
             else resolve(subs.data.orders);

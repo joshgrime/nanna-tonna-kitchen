@@ -40,7 +40,16 @@ return new Promise(function(resolve, reject) {
 
 function buildTodayOrder(data) {
 
+    console.log(data[0].date);
+
     var aggregate = [];
+    var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
+    var today = moment(data.date, 'YYYYMMDD');
+    var weekA = false;
+    var difference = today.diff(anchorDate, 'weeks');
+
+    if (difference === 0) weekA = true;
+    else if (difference % 2 === 0) weekA = true;
 
     for (let x of data) {
 
@@ -56,8 +65,32 @@ function buildTodayOrder(data) {
                     var prop = properties.filter(prop=>{
                         return prop.name === 'Dont Mind'
                     });
-                    var newWords = prop[0].value;
-                    variant += (' - ' + newWords);
+                    if (prop.length>0) {
+                        var variant_split = prop[0].value.split(' ');
+                        var dishNumber = variant_split[variant_split.length-1];
+                        var label;
+    
+                        if (weekA === true) {
+                    
+                            if (dishNumber === 'One') {
+                                label = 'Meat & Seafood';
+                            }
+                            else {
+                                label = 'Vegetarian';
+                            }
+            
+                        }
+                        else {
+                            if (dishNumber === 'One') {
+                                label = 'Vegetarian';
+                            }
+                            else {
+                                label = 'Meat & Seafood';
+                            }
+                        }
+                        variant += (' - ' + label);
+
+                    }
                 }
             }
     
@@ -224,9 +257,7 @@ function buildTable(data) {
                         console.log(prop.name);
                         return prop.name === 'Dont Mind'
                     });
-                    console.log(prop);
                     if (prop.length>0) {
-                        console.log('prop true');
                         var variant_split = prop[0].value.split(' ');
                         var dishNumber = variant_split[variant_split.length-1];
                         var label;
