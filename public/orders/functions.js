@@ -254,7 +254,6 @@ function buildTable(data) {
                 if (x.properties === undefined) properties = x.line_items[0].properties;
                 if (properties.length > 0) {
                     var prop = properties.filter(prop=>{
-                        console.log(prop.name);
                         return prop.name === 'Dont Mind'
                     });
                     if (prop.length>0) {
@@ -430,6 +429,8 @@ async function createAggregates(data) {
     };
     var _dates = await getDateData();
 
+    console.log(_dates);
+
     
     var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
@@ -498,10 +499,15 @@ async function createAggregates(data) {
                         return da === date; 
                     });
                     if (d.length>0) {
+
                         key2 = x;
                     }
                 }
             }
+        }
+
+        if (key1 === 'monday' || key2 === 'tuesday') {
+            console.log('KEY 1 mon/tue: '+key2);
         }
 
         quantity = quantity.toString();
@@ -612,8 +618,11 @@ return new Promise(function(resolve, reject){
     
     var datestr = year+'-'+month+'-'+day;
 
+    console.log('Date string is '+datestr);
+    console.log(datestr)
+
     var currentDay = moment(datestr, "YYYY-MM-DD");
-    currentDay.add(1, 'days');
+    currentDay.add(1, 'days'); //todays orders are blank
 
     var weekEndCheck = currentDay.format("dd");
     if (weekEndCheck === 'Sa') currentDay.add(2, 'days');
@@ -637,6 +646,8 @@ return new Promise(function(resolve, reject){
         else if (i===5) thisDay = 'friday';
 
         var d = currentDay.format("YYYYMMDD");
+
+        console.log(thisDay +' is '+d);
 
         payload[thisDay] = d;
         payload.colDates[thisDay] = d.substring(d.length-2, d.length);
@@ -666,9 +677,15 @@ return new Promise(function(resolve, reject){
         currentDay.add(1, 'days');
     }
 
-    payload.nextWeekMonTue = monTueNextWeek(datestr, todayIndex);
-    payload.nextWeekWedThur = wedThurFriNextWeek(datestr, todayIndex);
-    payload.weekAfterNext = weekAfterNext(datestr, todayIndex);
+    var _todayIndex = currentDay.format("d");
+    _todayIndex = parseInt(todayIndex);
+
+    if (_todayIndex === 0) todayIndex = 6;
+    else _todayIndex--;
+
+    payload.nextWeekMonTue = monTueNextWeek(datestr, _todayIndex);
+    payload.nextWeekWedThur = wedThurFriNextWeek(datestr, _todayIndex);
+    payload.weekAfterNext = weekAfterNext(datestr, _todayIndex);
 
     resolve(payload);
     });
@@ -691,8 +708,13 @@ function compareNumbers(a, b) {
 }
 
 function monTueNextWeek(datestr, dayOfWeek) { //gets monday and tuesday next week dates
+    console.log('HIT MON TUE NEXT WEEK WITH');
+    console.log(datestr);
+    console.log(dayOfWeek);
     var daysToAdd = 8; //to monday
     daysToAdd -= dayOfWeek;
+
+    console.log('Adding '+daysToAdd);
     var new_date = moment(datestr, "YYYY-MM-DD").add(daysToAdd, 'days');
     var monday = new_date.format('YYYYMMDD');
     new_date.add(1, 'days');
