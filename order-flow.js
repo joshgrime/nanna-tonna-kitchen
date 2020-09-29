@@ -330,7 +330,9 @@ function buildCSV(data, new_date_){
                 newCust = 'New Customer';
             }
 
-            var phone = x.shipping_address.phone.startsWith('44') ? '+' + x.shipping_address.phone : x.shipping_address.phone.startsWith('7') ? '0' + x.shipping_address.phone : x.shipping_address.phone;
+            var __phone = x.shipping_address.phone !== null ? x.shipping_address.phone : '';
+
+            var phone = __phone.startsWith('44') ? '+' + __phone : __phone.startsWith('7') ? '0' + __phone : __phone;
             var variant = x.line_items[0].variant_title;
             var _variant = variant.toLowerCase();
 
