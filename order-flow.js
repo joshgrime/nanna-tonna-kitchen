@@ -46,8 +46,6 @@ var orders = [];
         async function queue(){
         var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
         var subPayload = newOrders.filter(y=>{
-            
-            if (y.email === 'sarahcourtney.uk@gmail.com') console.log('SARAH', y);
             return y.scheduled_at.startsWith(new_date);
         });
         orders = orders.concat(subPayload);
@@ -412,11 +410,11 @@ function buildCSV(data, new_date_){
     
             }
 
-            orderMap.push([x.shipping_address.first_name, x.shipping_address.last_name, x.email, phone, x.shipping_address.address1, x.shipping_address.address2, note, x.shipping_address.zip, variant, quantity, newCust, x.line_items[0].quantity]);
+            orderMap.push([x.id, x.shipping_address.first_name, x.shipping_address.last_name, x.email, phone, x.shipping_address.address1, x.shipping_address.address2, note, x.shipping_address.zip, variant, quantity, newCust, x.line_items[0].quantity]);
 
         }
 
-        orderMap.unshift(['First name', 'Surname', 'Email', 'phone', 'Address 1', 'Address 2', 'Notes', 'Postcode', 'Dish', 'Quantity', 'New customer', 'Box']);
+        orderMap.unshift(['Order ID', 'First name', 'Surname', 'Email', 'phone', 'Address 1', 'Address 2', 'Notes', 'Postcode', 'Dish', 'Quantity', 'New customer', 'Box']);
 
         var filename = 'orders-'+ today.format('YYYY-MM-DD');     
 

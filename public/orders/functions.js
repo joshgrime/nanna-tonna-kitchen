@@ -681,7 +681,7 @@ return new Promise(function(resolve, reject){
     _todayIndex = parseInt(todayIndex);
 
     if (_todayIndex === 0) todayIndex = 6;
-    else _todayIndex--;
+    _todayIndex--;
 
     payload.nextWeekMonTue = monTueNextWeek(datestr, _todayIndex);
     payload.nextWeekWedThur = wedThurFriNextWeek(datestr, _todayIndex);
