@@ -434,6 +434,16 @@ async function createAggregates(data) {
     
     var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
+    
+    function checkMeat(el) {
+        return el === 'meat';
+    }
+
+    function checkVeg(el) {
+        return el.startsWith('veg');
+    }
+
+
     for (let x of data) {
         
         var today = moment(x.date, 'YYYYMMDD');
@@ -447,6 +457,33 @@ async function createAggregates(data) {
         var variant_split = x.variant.split(' ');
         var quantity = variant_split[0];
         quantity = parseInt(quantity);
+
+        var doubleOrder = false;
+
+        if (variant.indexOf('meat')>-1 && variant.indexOf('veg')>-1) {
+
+            var dish_split = variant.split(' ');
+            var meat_index = dish_split.findIndex(checkMeat);
+            var veg_index = dish_split.findIndex(checkVeg);
+            var veg_quantity = dish_split[veg_index-1];
+            var meat_quantity = dish_split[meat_index-1];
+
+            meat_quantity = meat_quantity === 'two' ? 2 : 4; 
+            veg_quantity = veg_quantity === 'two' ? 2 : 4; 
+            var label = 'meat';
+            var quantity = meat_quantity;
+
+            var label2 = 'veg';
+            var quantity2 = veg_quantity;
+
+            doubleOrder = true;
+        }
+        else {
+
+            var variantJoined = variant.replace(/ /g, '');
+            var variantIndex = variantJoined.indexOf('people');
+            variantIndex--;
+            var quantity = parseInt(variantJoined[variantIndex]);
 
         var label = variant.indexOf('vegetarian') > -1 ? 'veg' : variant.indexOf('meat') > -1 ? 'meat' : 'dontmind';
 
@@ -476,11 +513,10 @@ async function createAggregates(data) {
 
         }
 
+        }
+
         var date = x.date.toString();
-        var variantJoined = variant.replace(/ /g, '');
-        var variantIndex = variantJoined.indexOf('people');
-        variantIndex--;
-        var quantity = parseInt(variantJoined[variantIndex]);
+
 
         //find the date to put it in
         let key1;
@@ -513,12 +549,21 @@ async function createAggregates(data) {
         quantity = quantity.toString();
         if (key1 !== undefined) {
             payload[key1][label+quantity]++;
+            if (doubleOrder === true) {
+                payload[key1][label2+quantity2]++;
+            }
         }
         if (key2 !== undefined) {
             payload[key2][label+quantity]++;
+            if (doubleOrder === true) {
+                payload[key2][label2+quantity2]++;
+            }
         }
 
     }
+
+    console.log('FINAL AGG');
+    console.log(payload);
 
     var summaryHold = $('<div class="summary-hold"></div>');
 

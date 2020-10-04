@@ -105,6 +105,15 @@ function generateCSV(name, data, falseCount, date){
                     veg6:0
                 };
 
+                var aggregates_new = {
+                    meat2:0,
+                    meat4:0,
+                    meat6:0,
+                    veg2:0,
+                    veg4:0,
+                    veg6:0
+                };
+
                 function checkMeat(el) {
                     return el === 'meat';
                 }
@@ -114,6 +123,9 @@ function generateCSV(name, data, falseCount, date){
                 }
     
                 for (let z of data) {
+
+                    var agg_type = z.data.customField3 === 'New Customer' ? aggregates_new : aggregates;
+
                     var dish = z.data.customField2.toLowerCase()
 
                     if (dish.indexOf('meat')>-1 && dish.indexOf('veg')>-1) {
@@ -127,8 +139,11 @@ function generateCSV(name, data, falseCount, date){
                         var veg_quantity = dish_split[veg_index-1];
                         var meat_quantity = dish_split[meat_index-1];
 
-                        aggregates[('meat'+meat_quantity)]++;
-                        aggregates[('veg'+veg_quantity)]++;
+                        meat_quantity = meat_quantity === 'two' ? 2 : 4; 
+                        veg_quantity = veg_quantity === 'two' ? 2 : 4; 
+
+                        agg_type[('meat'+meat_quantity)]++;
+                        agg_type[('veg'+veg_quantity)]++;
 
                         console.log('added a double order:');
                         console.log('Meat: '+meat_quantity);
@@ -140,7 +155,7 @@ function generateCSV(name, data, falseCount, date){
                     
                         var quantity = z.data.customField1;
                         if (typeof quantity === 'string') quantity = parseInt(quantity);
-                        aggregates[(dishy+quantity)]++;
+                        agg_type[(dishy+quantity)]++;
                     }
 
 
@@ -151,15 +166,25 @@ function generateCSV(name, data, falseCount, date){
                     return [x.data.orderNo, x.data.customField2, x.data.customField1, x.data.location.notes, x.data.customField3];
                 });
 
-                orders.unshift(['Order No', 'Dish', 'Quantity', 'Customer Message', 'New Customer']);
-                orders.unshift([' ', ' ', ' ', ' ', ' ']);
-                orders.unshift(['Driver: '+name, ' ', ' ', ' ', ' ']);
-                orders.push([' ', ' ', ' ', ' ', ' ']);
-                orders.push(['Driver Summary', ' ', ' ', ' ', ' ']);
-                orders.push(['Meat & Seafood', 'Veg', ' ', ' ', ' ']);
-                orders.push(['2 x '+aggregates.meat2, '2 x '+aggregates.veg2, ' ', ' ', ' ']);
-                orders.push(['4 x '+aggregates.meat4, '4 x '+aggregates.veg4, ' ', ' ', ' ']);
-                orders.push(['6 x '+aggregates.meat6, '6 x '+aggregates.veg6, ' ', ' ', ' ']);
+                var final = [
+                    ['Driver: '+name, ' ', ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' '],
+                    ['Existing Customers', ' ', ' ', ' ', ' '],
+                    ['Meat', 'Veg', ' ', ' ', ' '],
+                    ['2 x '+aggregates.meat2, '2 x '+aggregates.veg2, ' ', ' ', ' '],
+                    ['4 x '+aggregates.meat4, '4 x '+aggregates.veg4, ' ', ' ', ' '],
+                    ['6 x '+aggregates.meat6, '6 x '+aggregates.veg6, ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' '],
+                    ['New Customers', ' ', ' ', ' ', ' '],
+                    ['Meat', 'Veg', ' ', ' ', ' '],
+                    ['2 x '+aggregates_new.meat2, '2 x '+aggregates_new.veg2, ' ', ' ', ' '],
+                    ['4 x '+aggregates_new.meat4, '4 x '+aggregates_new.veg4, ' ', ' ', ' '],
+                    ['6 x '+aggregates_new.meat6, '6 x '+aggregates_new.veg6, ' ', ' ', ' '],
+                    [' ', ' ', ' ', ' ', ' '],
+                    ['Order No', 'Dish', 'Quantity', 'Customer Message', 'New Customer'],
+                ]
+
+                final = final.concat(orders);
 
                 var totalOrders = 0;
 
@@ -168,8 +193,13 @@ function generateCSV(name, data, falseCount, date){
                       totalOrders += aggregates[el];
                     }
                 }
+                for(var el2 in aggregates_new) {
+                    if(aggregates_new.hasOwnProperty(el2)) {
+                      totalOrders += aggregates_new[el2];
+                    }
+                }
     
-                csv.writeToPath(__dirname+"/schedules/"+filename+".csv", orders, {headers: true})
+                csv.writeToPath(__dirname+"/schedules/"+filename+".csv", final, {headers: true})
                 .on("finish", function(){
                       console.log(filename+' file created.');
                       resolve({
