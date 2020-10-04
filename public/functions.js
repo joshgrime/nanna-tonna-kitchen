@@ -17,6 +17,21 @@ function generateReports(){
     });
 }
 
+function generateReferrals(){
+    $('#results2').html('');
+    document.getElementById('gen-btn2').style.display = 'none';
+    document.getElementById('loading2').style.display = 'block';
+    var dataRequest = httpReq(window.location.protocol+'//'+window.location.host+'/generate-referrals-export/', 'GET')
+    dataRequest.then(x=>{
+            var linkEl = $('<a class="result-a" target="_blank" href="'+window.location.protocol+'//'+window.location.host+'/get-referral/'+x+'.csv">Download File</a>');
+            var el = $('<div class="result-link"></div>');
+            el.append(linkEl);
+            $('#results2').append(el);
+            document.getElementById('loading2').style.display = 'none';
+            document.getElementById('results2').style.display = 'block';
+    });
+}
+
 function httpReq(url, method, body) {
     return new Promise(function(resolve, reject) {
         var xmlHttp = new XMLHttpRequest();
@@ -65,3 +80,4 @@ function addDateToPage(){
 addDateToPage();
 
 document.getElementById('gen-btn').addEventListener('click', generateReports);
+document.getElementById('gen-btn2').addEventListener('click', generateReferrals);

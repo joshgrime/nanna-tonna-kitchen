@@ -229,7 +229,7 @@ function buildTable(data) {
     var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
     for (let x of data) {
-        
+
         var today = moment(x.date, 'YYYYMMDD');
         var weekA = false;
         var difference = today.diff(anchorDate, 'weeks');

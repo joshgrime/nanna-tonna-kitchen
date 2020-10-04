@@ -3,6 +3,8 @@ const axios = require('axios');
 const moment = require('moment');
 const rchost = 'https://api.rechargeapps.com';
 const rckey = process.env.RCKEY;
+const csv = require('fast-csv');
+
 
 var subsInCache = false;
 var ordersInCache = false;
@@ -13,7 +15,9 @@ module.exports = {
     makeShopifyRequest: makeShopifyRequest,
     add10Days: add10Days,
     add2Weeks: add2Weeks,
-    formatDateNicely: formatDateNicely
+    formatDateNicely: formatDateNicely,
+    buildReferralCSV: buildReferralCSV,
+    getReferrals: getReferrals
 }
 
 function add10Days(datestr) {
@@ -142,6 +146,125 @@ function getTodayOrder(){
             queue();
         }       
     });
+}
+
+
+
+function getReferrals(){
+    return new Promise(function(resolve, reject) {
+
+        var date = new Date();
+        var year = date.getFullYear();
+        var month = date.getMonth();
+        month++;
+        month = month.toString();
+        if (month.length<2) month = "0" + month;
+        var day = date.getDate();
+        day = day.toString();
+        if (day.length<2) day = "0" + day;
+        var datestr = year+'-'+month+'-'+day;   
+
+        if (ordersInCache === true) {
+            var data = retrieveOrders();
+            data.then(x=>{
+                console.log('got orders from cace')
+                resolve([x, datestr]);
+            });
+        }
+        else {
+           
+            var payload = [];
+            var pageCount = 1;
+            async function queue(){
+                var data = await makeShopifyRequest(pageCount, datestr, 'today');
+                var subPayload = data.filter(y=>{
+                    var newCust = false;
+                    var properties = y.line_items[0].properties;
+                    
+                    if (properties !== undefined && properties.length>0) {
+                        for (let xxx of properties) {
+                            if (xxx.name === 'Recommended By') newCust = true;
+                        }
+                        return y.scheduled_at.startsWith(datestr) && newCust;
+                    }
+                    else {
+                        return false;
+                    }
+                });
+                
+                console.log(subPayload[0]===undefined?'no subs in this one on this date':subPayload[0]);
+                payload = payload.concat(subPayload);
+                pageCount++;
+                if (data.length >= 250) {
+                    console.log('More than 250 orders');
+                    queue();
+                }
+                else {
+                    console.log('Got '+payload.length+' orders');
+                    resolve([payload, datestr]);
+                    exportOrders(payload);
+                    ordersInCache = true;
+                    setTimeout(function(){
+                        ordersInCache = false;
+                    }, 1000 * 60 * 60);
+                }
+            }
+            queue();
+        }       
+    });
+}
+
+
+function buildReferralCSV(data, date){
+    console.log('buildin gcsv with '+data.length+' orders');
+    return new Promise(function(resolve, reject) {
+        try {
+            
+        var final = [
+
+            ['Referred Customers', date, ' ', ' '],
+            [' ', ' ', ' ', ' '],
+            ['Name', 'Referred By', ' ', ' ']
+
+        ]
+
+        var referrals = data.map(x=>{
+            var name = x.first_name + ' ' + x.last_name;
+            var properties = x.line_items[0].properties;
+            var email;
+            for (let xxx of properties) {
+                if (xxx.name === 'Recommended By') {
+                    email = xxx.value;
+                }
+            }
+            return [name, email]
+        });
+
+        final = final.concat(referrals);
+        
+
+        var filename = 'referrals-'+ date;     
+
+        csv.writeToPath(__dirname+"/schedules/"+filename+".csv", final)
+        .on("finish", function(){
+              console.log(filename+' file created.');
+              resolve(filename);
+        })
+        .on("error", function(e){
+            console.log('Error exporting CSV.');
+            console.log(e);
+            reject(e);
+        })
+
+    }
+    catch (e) {
+        console.log(e);
+        reject(e);
+    }
+
+    });
+
+
 }
 
 function makeFakeShopifyRequest(){

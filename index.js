@@ -9,6 +9,7 @@ var CronJob = require('cron').CronJob;
 const passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy;
 const cookieSession = require('cookie-session');
+const rechargeLib = require('./recharge-lib.js');
 const app = express();
 app.set('port', 3000);
 app.use(express.json());
@@ -66,6 +67,34 @@ app.get('/generate-order-export/:date', isLoggedIn, function(req, res) {
     catch (e) {
         res.sendStatus(500);
     }
+});
+
+app.get('/generate-referrals-export', isLoggedIn, function(req, res) {
+    try {
+        var start = rechargeLib.getReferrals();
+        start.then(x=>{
+            var data = rechargeLib.buildReferralCSV(x[0], x[1]);
+            data.then(y=>{
+                res.send(y);
+            })
+        })
+    }
+    catch (e) {
+        res.sendStatus(500);
+    }
+});
+
+app.get('/get-referral/:fileName', isLoggedIn, function(req, res) {
+
+    try {
+        var data = orderFlow.getCSVFile(req.params.fileName);
+        res.send(data);
+    }
+    catch (e) {
+        console.log(e);
+        res.sendStatus(500);
+    }
+
 });
 
 
