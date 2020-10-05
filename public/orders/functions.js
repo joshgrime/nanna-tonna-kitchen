@@ -51,6 +51,20 @@ function buildTodayOrder(data) {
     if (difference === 0) weekA = true;
     else if (difference % 2 === 0) weekA = true;
 
+    function convertToNum(textNumber) {
+        let tn = textNumber.toLowerCase();
+        var num = tn === 'two' ? 2 : tn === 'four' ? 4 : 6;
+        return num;
+    }
+
+    function checkMeat(el) {
+        return el === 'meat';
+    }
+
+    function checkVeg(el) {
+        return el.startsWith('veg');
+    }
+
     for (let x of data) {
 
             var productTitle = x.line_items[0].title;
@@ -58,7 +72,7 @@ function buildTodayOrder(data) {
             var variant = x.line_items[0].variant_title;
     
             var _variant = x.line_items[0].variant_title.toLowerCase();
-    
+
             if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
                 var properties = x.line_items[0].properties;
                 if (properties.length > 0) {
@@ -107,6 +121,19 @@ function buildTodayOrder(data) {
 
 }
 
+function convertToNum(textNumber) {
+    let tn = textNumber.toLowerCase();
+    var num = tn === 'two' ? 2 : tn === 'four' ? 4 : 6;
+    return num;
+}
+
+function checkMeat(el) {
+    return el === 'meat';
+}
+
+function checkVeg(el) {
+    return el.startsWith('veg');
+}
 
 async function createTodayAggregates(data) {
     var newCustomerPayload = {
@@ -129,6 +156,7 @@ async function createTodayAggregates(data) {
     };
     var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
 
+    
     var todayDate = moment().format('YYYYMMDD');
     var today = moment(todayDate, 'YYYYMMDD');
     for (let x of data) {
@@ -141,8 +169,33 @@ async function createTodayAggregates(data) {
 
         var variant = x.variant.toLowerCase();
         var variant_split = x.variant.split(' ');
-        var quantity = variant_split[0];
-        quantity = parseInt(quantity);
+
+        var quantity;
+        var doubleOrder = false;
+
+        if (variant.indexOf('meat')>-1 && variant.indexOf('veg')>-1) {
+
+            console.log('Got a double order');
+            console.log(x.variant);
+
+            var dish_split = variant.split(' ');
+            var meat_index = dish_split.findIndex(checkMeat);
+            var veg_index = dish_split.findIndex(checkVeg);
+            var veg_quantity = dish_split[veg_index-1];
+            var meat_quantity = dish_split[meat_index-1];
+
+            console.log('Veg: '+veg_quantity);
+            console.log('Meat: '+meat_quantity);
+
+            quantity = convertToNum(veg_quantity) ;
+            var label = 'veg';
+            var label2 = 'meat';
+            var quantity2 = convertToNum(meat_quantity);
+            doubleOrder = true;
+        }
+        else {
+            quantity = variant_split[0];
+            quantity = parseInt(quantity);    
 
         var label = variant.indexOf('vegetarian') > -1 ? 'veg' : variant.indexOf('meat') > -1 ? 'meat' : 'dontmind';
 
@@ -169,13 +222,26 @@ async function createTodayAggregates(data) {
             }
 
         }
+    }
         var variantJoined = variant.replace(/ /g, '');
         var variantIndex = variantJoined.indexOf('people');
         variantIndex--;
         var quantity = parseInt(variantJoined[variantIndex]);
 
         newCustomerPayload['today'][label+quantity]++;
-        if (x.firstOrder === true) newCustomerPayload['new'][label+quantity]++
+        if (doubleOrder === true) {
+            console.log('Adding double order to payload: '+label2+quantity2);
+            newCustomerPayload['today'][label2+quantity2]++;
+        }
+        if (x.firstOrder === true) {
+            
+            if (doubleOrder === true) {
+                console.log('Adding double order to payload: '+label2+quantity2);
+                newCustomerPayload['new'][label2+quantity2]++
+            }
+            console.log('Single order to payload: '+label+quantity);
+            newCustomerPayload['new'][label+quantity]++
+        }
     }
 
     var newCustomerSummaryHold = $('<div class="summary-hold"></div>');

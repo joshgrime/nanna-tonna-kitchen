@@ -119,7 +119,7 @@ function generateCSV(name, data, falseCount, date){
                 }
 
                 function checkVeg(el) {
-                    return el === 'veg';
+                    return el.startsWith('veg');
                 }
     
                 for (let z of data) {
@@ -131,8 +131,6 @@ function generateCSV(name, data, falseCount, date){
                     if (dish.indexOf('meat')>-1 && dish.indexOf('veg')>-1) {
 
                         var dish_split = dish.split(' ');
-                        console.log('DISH SPLIT: ');
-                        console.log(dish_split);
 
                         var meat_index = dish_split.findIndex(checkMeat);
                         var veg_index = dish_split.findIndex(checkVeg);

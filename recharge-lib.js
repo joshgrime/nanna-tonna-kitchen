@@ -150,28 +150,8 @@ function getTodayOrder(){
 
 
 
-function getReferrals(){
+function getReferrals(datestr){
     return new Promise(function(resolve, reject) {
-
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = date.getMonth();
-        month++;
-        month = month.toString();
-        if (month.length<2) month = "0" + month;
-        var day = date.getDate();
-        day = day.toString();
-        if (day.length<2) day = "0" + day;
-        var datestr = year+'-'+month+'-'+day;   
-
-        if (ordersInCache === true) {
-            var data = retrieveOrders();
-            data.then(x=>{
-                console.log('got orders from cace')
-                resolve([x, datestr]);
-            });
-        }
-        else {
            
             var payload = [];
             var pageCount = 1;
@@ -180,11 +160,21 @@ function getReferrals(){
                 var subPayload = data.filter(y=>{
                     var newCust = false;
                     var properties = y.line_items[0].properties;
+
+                    var firstOrder = y.tags.indexOf('Subscription First Order') > -1;
                     
-                    if (properties !== undefined && properties.length>0) {
+                    if (properties !== undefined && properties.length>0 && firstOrder === true) {
                         for (let xxx of properties) {
                             if (xxx.name === 'Recommended By') newCust = true;
                         }
+
+                        if (newCust === true) {
+
+                            console.log('New customer is true, lets check prices');
+                            console.log(y);
+
+                        }
+
                         return y.scheduled_at.startsWith(datestr) && newCust;
                     }
                     else {
@@ -202,15 +192,9 @@ function getReferrals(){
                 else {
                     console.log('Got '+payload.length+' orders');
                     resolve([payload, datestr]);
-                    exportOrders(payload);
-                    ordersInCache = true;
-                    setTimeout(function(){
-                        ordersInCache = false;
-                    }, 1000 * 60 * 60);
                 }
             }
-            queue();
-        }       
+            queue();     
     });
 }
 

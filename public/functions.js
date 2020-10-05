@@ -1,5 +1,7 @@
 var $input;
 
+var $input2;
+
 function generateReports(){
     $('#results').html('');
     document.getElementById('gen-btn').style.display = 'none';
@@ -21,7 +23,9 @@ function generateReferrals(){
     $('#results2').html('');
     document.getElementById('gen-btn2').style.display = 'none';
     document.getElementById('loading2').style.display = 'block';
-    var dataRequest = httpReq(window.location.protocol+'//'+window.location.host+'/generate-referrals-export/', 'GET')
+    var picker = $input2.pickadate('picker')
+    var date_selected = picker.get('select', 'yyyy-mm-dd');
+    var dataRequest = httpReq(window.location.protocol+'//'+window.location.host+'/generate-referrals-export/'+date_selected, 'GET')
     dataRequest.then(x=>{
             var linkEl = $('<a class="result-a" target="_blank" href="'+window.location.protocol+'//'+window.location.host+'/get-referral/'+x+'.csv">Download File</a>');
             var el = $('<div class="result-link"></div>');
@@ -74,6 +78,13 @@ function addDateToPage(){
     });
     var picker = $input.pickadate('picker')
     picker.set('select', datestr, {format: 'yyyy-mm-dd' });
+
+    $input2 = $('#datepicker2').pickadate({
+        clear: '',
+        firstDay: 'Monday'
+    });
+    var picker2 = $input2.pickadate('picker')
+    picker2.set('select', datestr, {format: 'yyyy-mm-dd' });
 
 }
 

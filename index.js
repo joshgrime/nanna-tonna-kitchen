@@ -69,9 +69,9 @@ app.get('/generate-order-export/:date', isLoggedIn, function(req, res) {
     }
 });
 
-app.get('/generate-referrals-export', isLoggedIn, function(req, res) {
+app.get('/generate-referrals-export/:date', isLoggedIn, function(req, res) {
     try {
-        var start = rechargeLib.getReferrals();
+        var start = rechargeLib.getReferrals(req.params.date);
         start.then(x=>{
             var data = rechargeLib.buildReferralCSV(x[0], x[1]);
             data.then(y=>{
