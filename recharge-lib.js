@@ -152,16 +152,29 @@ function getTodayOrder(){
 
 function getReferrals(datestr){
     return new Promise(function(resolve, reject) {
+
+            var date = new Date();
+            var year = date.getFullYear();
+            var month = date.getMonth();
+            month++;
+            month = month.toString();
+            if (month.length<2) month = "0" + month;
+            var day = date.getDate();
+            day = day.toString();
+            if (day.length<2) day = "0" + day;
+            var _datestr = year+'-'+month+'-'+day;   
+
+            var today = _datestr === datestr ? 'today' : null;
            
             var payload = [];
             var pageCount = 1;
             async function queue(){
-                var data = await makeShopifyRequest(pageCount, datestr, 'today');
+                var data = await makeShopifyRequest(pageCount, datestr, today);
                 var subPayload = data.filter(y=>{
                     var newCust = false;
                     var properties = y.line_items[0].properties;
 
-                    var firstOrder = y.tags.indexOf('Subscription First Order') > -1;
+                    var firstOrder = y.total_price === '0.00' && y.total_discounts === '0.0';
                     
                     if (properties !== undefined && properties.length>0 && firstOrder === true) {
                         for (let xxx of properties) {
