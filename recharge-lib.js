@@ -369,9 +369,6 @@ module.exports = {
     getTodayOrder:getTodayOrder,
     getWeekOrder:getWeekOrder,
     makeShopifyRequest: makeShopifyRequest,
-    add10Days: add10Days,
-    add2Weeks: add2Weeks,
-    formatDateNicely: formatDateNicely,
     buildReferralCSV: buildReferralCSV,
     getReferrals: getReferrals
 }

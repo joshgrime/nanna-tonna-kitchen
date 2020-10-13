@@ -10,7 +10,6 @@
   "author": "Manchester Automata",
   "license": "ISC",
   "dependencies": {
-    "@onfleet/node-onfleet": "^1.1.0",
     "axios": "^0.20.0",
     "cookie-session": "^1.4.0",
     "cron": "^1.8.2",
@@ -18,7 +17,6 @@
     "express": "^4.17.1",
     "fast-csv": "^4.3.2",
     "moment": "^2.27.0",
-    "node-geocoder": "^3.27.0",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "uniqid": "^5.2.0"

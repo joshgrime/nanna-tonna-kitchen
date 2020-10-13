@@ -3,25 +3,15 @@ const uniqid = require('uniqid');
 const { makeShopifyRequest } = require('./recharge-lib.js');
 const moment = require('moment');
 const OR_KEY = process.env.OR_KEY;
-//const nodeGeocoder = require('node-geocoder');
 const csv = require('fast-csv');
 
 const fs = require('fs');
 
-/*var options = {
-    provider: 'openstreetmap'
-  };
-   */
-//var geocoder = nodeGeocoder(options);
 
 module.exports = {
     default: initialise,
     getCSVFile: getCSVFile
 };
-
-var weekMap = [
-    'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'
-];
 
 function makeOptimoRequest(payload){
     console.log('Uploading to Optimoroute:');
@@ -40,8 +30,8 @@ function queueOrderRequest(datestr, new_date){
     return new Promise(function(resolve, reject){
 
         
-var orderRequestCount = 1;
-var orders = [];
+        var orderRequestCount = 1;
+        var orders = [];
 
         async function queue(){
         var newOrders = await makeShopifyRequest(orderRequestCount, datestr);
@@ -54,9 +44,6 @@ var orders = [];
             queue();
         }
         else {
-           // console.log(orders);
-            console.log('there were '+orders.length+' orders');
-            //buildOptimoRequest(new_datestr);//buildOnFleetRequest();
             resolve(orders);
         }
     }
@@ -294,13 +281,15 @@ function buildCSV(data, new_date_){
         try {
         var orderMap = [];
 
-        var anchorDate = moment('21-09-2020', 'DD-MM-YYYY');
+        var anchorDate = moment('21-09-2020', 'DD-MM-YYYY'); // this date was the start of the cycle - week A
+
 
         var today = moment(new_date_, 'YYYY-MM-DD');
 
             var weekA = false;
-            var difference = today.diff(anchorDate, 'weeks');
-    
+            var difference = today.diff(anchorDate, 'weeks'); //find the difference in weeks between now and the above anchor date
+
+            //if the difference is an even number, its week A, if it's odd, is week B
             if (difference === 0) weekA = true;
             else if (difference % 2 === 0) weekA = true;
 
@@ -319,8 +308,6 @@ function buildCSV(data, new_date_){
             }
         
         for (let x of data) {
-    
-    
             var note = ' ' + x.shipping_address.company;
             var newCust = ' ';
 
@@ -337,82 +324,93 @@ function buildCSV(data, new_date_){
             var variant = x.line_items[0].variant_title;
             var _variant = variant.toLowerCase();
 
-        var quantity;
+            var quantity;
 
-        if (_variant.indexOf('meat')>-1 && _variant.indexOf('veg')>-1) {
+            
+                    /*
+                        The dish name in recharge also holds the information on quantity. 
+                        Usually something like 'Two Meat & Seafood'
+                        It could also be 'four don't mind', in which case it alternates between Meat & Seafood and Vegetarian each week
+                        It could also be two types per order e.g. 'Two Meat Four Veg'.
 
-            var dish_split = _variant.split(' ');
-            var meat_index = dish_split.findIndex(checkMeat);
-            var veg_index = dish_split.findIndex(checkVeg);
-            var veg_quantity = dish_split[veg_index-1];
-            var meat_quantity = dish_split[meat_index-1];
-            quantity = convertToNum(veg_quantity) + convertToNum(meat_quantity);
+                        We have to parse the information out to build the CSV to upload into optimoroute
 
-        }
-        else {
-            quantity = x.line_items[0].variant_title.substring(0,1);
-        }
-    
-            if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
-                var properties = x.properties;
-                if (x.properties === undefined) properties = x.line_items[0].properties;
-                if (properties.length > 0) {
-                    var prop = properties.filter(prop=>{
-                        return prop.name === 'Dont Mind'
-                    });
-                    if (prop.length>0) {
-                        var variant_split = prop[0].value.split(' ');
-                        var dishNumber = variant_split[variant_split.length-1];
+                    */
+
+            if (_variant.indexOf('meat')>-1 && _variant.indexOf('veg')>-1) {
+
+                var dish_split = _variant.split(' ');
+                var meat_index = dish_split.findIndex(checkMeat);
+                var veg_index = dish_split.findIndex(checkVeg);
+                var veg_quantity = dish_split[veg_index-1];
+                var meat_quantity = dish_split[meat_index-1];
+                quantity = convertToNum(veg_quantity) + convertToNum(meat_quantity);
+
+            }
+            else {
+                quantity = x.line_items[0].variant_title.substring(0,1);
+            }
+        
+                if (_variant.indexOf('vegetarian') === -1 && _variant.indexOf('meat') === -1) {
+                    var properties = x.properties;
+                    if (x.properties === undefined) properties = x.line_items[0].properties;
+                    if (properties.length > 0) {
+                        var prop = properties.filter(prop=>{
+                            return prop.name === 'Dont Mind'
+                        });
+                        if (prop.length>0) {
+                            var variant_split = prop[0].value.split(' ');
+                            var dishNumber = variant_split[variant_split.length-1];
+                        }
+                        else {
+                            var dishNumber = 'One';
+                        }
                     }
                     else {
                         var dishNumber = 'One';
                     }
-                }
-                else {
-                    var dishNumber = 'One';
-                }
-                var label;
-                    
-    
-                        if (weekA === true) {
-                    
-                            if (dishNumber === 'One') {
-                                label = 'Meat & Seafood';
+                    var label;
+                        
+        
+                            if (weekA === true) {
+                        
+                                if (dishNumber === 'One') {
+                                    label = 'Meat & Seafood';
+                                }
+                                else {
+                                    label = 'Vegetarian';
+                                }
+                
                             }
                             else {
-                                label = 'Vegetarian';
+                                if (dishNumber === 'One') {
+                                    label = 'Vegetarian';
+                                }
+                                else {
+                                    label = 'Meat & Seafood';
+                                }
                             }
-            
-                        }
-                        else {
-                            if (dishNumber === 'One') {
-                                label = 'Vegetarian';
-                            }
-                            else {
-                                label = 'Meat & Seafood';
-                            }
-                        }
-                        variant = label;
-                }
-            else {
-                var variant_split = variant.split(' / ');
-    
-                if (variant_split.length > 3) {
-    
-                variant = variant_split[variant_split.length-2] + ' + ' + variant_split[variant_split.length-1];
-                    
-    
-                }
+                            variant = label;
+                    }
                 else {
-                    variant = variant_split[variant_split.length-1];
-    
+                    var variant_split = variant.split(' / ');
+        
+                    if (variant_split.length > 3) {
+        
+                    variant = variant_split[variant_split.length-2] + ' + ' + variant_split[variant_split.length-1];
+                        
+        
+                    }
+                    else {
+                        variant = variant_split[variant_split.length-1];
+        
+                    }
+        
                 }
-    
+
+                orderMap.push([x.id, x.shipping_address.first_name, x.shipping_address.last_name, x.email, phone, x.shipping_address.address1, x.shipping_address.address2, note, x.shipping_address.zip, variant, quantity, newCust, x.line_items[0].quantity]);
+
             }
-
-            orderMap.push([x.id, x.shipping_address.first_name, x.shipping_address.last_name, x.email, phone, x.shipping_address.address1, x.shipping_address.address2, note, x.shipping_address.zip, variant, quantity, newCust, x.line_items[0].quantity]);
-
-        }
 
         orderMap.unshift(['Order ID', 'First name', 'Surname', 'Email', 'phone', 'Address 1', 'Address 2', 'Notes', 'Postcode', 'Dish', 'Quantity', 'New customer', 'Box']);
 
