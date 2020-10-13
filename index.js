@@ -1,9 +1,10 @@
+/* Dependencies */
+
 require('dotenv').config()
 const path = require('path');
 const http = require('http');
 const express = require('express');
 const orderFlow = require('./order-flow.js');
-const rclib = require('./recharge-lib.js');
 const driverlib = require('./driver-reports.js');
 var CronJob = require('cron').CronJob;
 const passport = require('passport')
@@ -11,6 +12,9 @@ var LocalStrategy = require('passport-local').Strategy;
 const cookieSession = require('cookie-session');
 const rechargeLib = require('./recharge-lib.js');
 const app = express();
+
+/* Express Config */
+
 app.set('port', 3000);
 app.use(express.json());
 app.use(cookieSession({
@@ -30,8 +34,8 @@ app.use(['/assets','/assets*'], express.static(buildpath + '/assets'));
 app.get('/today-orders', isLoggedIn, function(req, res) {
     console.log('getting today order...');
     try {
-        var today_data = rclib.getTodayOrder();
-        var week_data = rclib.getWeekOrder();
+        var today_data = rechargeLib.getTodayOrder();
+        var week_data = rechargeLib.getWeekOrder();
         var prom_array = [today_data, week_data];
         Promise.all(prom_array).then(x=>{
             res.send(x);
@@ -73,6 +77,8 @@ app.get('/generate-referrals-export/:date', isLoggedIn, function(req, res) {
     try {
         var start = rechargeLib.getReferrals(req.params.date);
         start.then(x=>{
+            //0 is payload
+            //1 is date string
             var data = rechargeLib.buildReferralCSV(x[0], x[1]);
             data.then(y=>{
                 res.send(y);
@@ -205,6 +211,8 @@ passport.use('login', new LocalStrategy({
 ));
 }
 
+//express middleware to check a user is logged in before using the API endpoints
+
 function checkUser(apiUser){
     if (process.env.USERS === undefined || null) return 0;
     var whitelist = process.env.USERS.split(',');
@@ -215,6 +223,8 @@ function checkUser(apiUser){
         return 0;
     }
 }
+
+//some endpoints require admin permission
 
 function checkAdmin(apiUser){
     if (process.env.ADMINS === undefined || null) return 0;
@@ -255,7 +265,12 @@ app.use('/', isLoggedIn, express.static(buildpath));
 var server = http.createServer(app).listen(app.get('port'));
 
 //set off integration on cron job
+/*
+
+This was a previous requirement.
+
 var jobRunning = false;
 var job = new CronJob('0 18 * * 0-5', orderFlow.default, null, true, "Europe/London");
 
 console.log(job.nextDates());
+*/
